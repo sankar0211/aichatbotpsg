@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+ai_chatbot_psg/__pycache__/
