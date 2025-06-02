@@ -179,6 +179,52 @@
       from { opacity: 0; transform: translateY(5px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    .dot-typing {
+      display: inline-block;
+      position: relative;
+      width: 60px;
+      height: 1rem;
+    }
+
+    .dot-typing::before,
+    .dot-typing::after,
+    .dot-typing span {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #0077cc;
+      animation: typing 1.2s infinite;
+    }
+
+    .dot-typing::before {
+      left: 0;
+      animation-delay: 0s;
+    }
+
+    .dot-typing span {
+      left: 20px;
+      animation-delay: 0.2s;
+    }
+
+    .dot-typing::after {
+      left: 40px;
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+      0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.3;
+      }
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -187,7 +233,11 @@
       PSG AI Chatbot
       <button id="theme-toggle">🌓</button>
     </h2>
-    <div id="chat-box"></div>
+    <div id="chat-box">
+      <div id="typing-indicator" style="display: none;" class="bot-msg">
+        <span class="dot-typing"></span>
+      </div>
+    </div>
     <form id="chat-form">
       <input type="text" id="user-input" placeholder="Ask me anything about PSG..." required />
       <button type="submit">Send</button>
@@ -199,6 +249,7 @@
     const chatBox = document.getElementById('chat-box');
     const userInput = document.getElementById('user-input');
     const themeToggle = document.getElementById('theme-toggle');
+    const typingIndicator = document.getElementById('typing-indicator');
 
     themeToggle.addEventListener('click', () => {
       document.body.classList.toggle('dark-mode');
@@ -210,6 +261,9 @@
       if (!message) return;
       appendMessage('user', message);
       userInput.value = '';
+      typingIndicator.style.display = 'block';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
       try {
         const response = await fetch('/chat', {
           method: 'POST',
@@ -217,9 +271,11 @@
           body: JSON.stringify({ message })
         });
         const data = await response.json();
+        typingIndicator.style.display = 'none';
         appendMessage('bot', data.reply || "Sorry, I couldn't understand that.");
       } catch (error) {
         console.error(error);
+        typingIndicator.style.display = 'none';
         appendMessage('bot', 'Oops! Something went wrong. Please try again.');
       }
     });
@@ -229,7 +285,7 @@
       msgDiv.className = sender === 'user' ? 'user-msg' : 'bot-msg';
       const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
       msgDiv.innerHTML = `${text}<span class="timestamp">${timestamp}</span>`;
-      chatBox.appendChild(msgDiv);
+      chatBox.insertBefore(msgDiv, typingIndicator);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
   </script>
