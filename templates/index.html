@@ -1,75 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PSG AI Chatbot</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
-    /* Optional: Basic styling if style.css isn’t available */
+    :root {
+      --bg-light: #eef2f3;
+      --bg-dark: #1e1e2f;
+      --card-light: #ffffff;
+      --card-dark: #2a2a3d;
+      --text-light: #2c3e50;
+      --text-dark: #f1f1f1;
+      --user-msg-light: #d1e7dd;
+      --bot-msg-light: #e8f0fe;
+      --user-msg-dark: #355c4f;
+      --bot-msg-dark: #374a6b;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-light);
       margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      transition: background 0.4s ease;
     }
+
+    body.dark-mode {
+      background: var(--bg-dark);
+    }
+
     .chat-container {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      padding: 1rem;
-      width: 400px;
-      max-width: 90%;
+      background: var(--card-light);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      padding: 2rem;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.4s ease;
     }
+
+    body.dark-mode .chat-container {
+      background: var(--card-dark);
+    }
+
+    .chat-container h2 {
+      margin-top: 0;
+      font-size: 1.5rem;
+      text-align: center;
+      color: var(--text-light);
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    body.dark-mode .chat-container h2 {
+      color: var(--text-dark);
+    }
+
+    #theme-toggle {
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+    }
+
     #chat-box {
-      height: 300px;
+      height: 320px;
       overflow-y: auto;
       border: 1px solid #ccc;
-      margin-bottom: 0.5rem;
-      padding: 0.5rem;
+      border-radius: 8px;
+      padding: 0.75rem;
       background: #f9f9f9;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
     }
+
+    body.dark-mode #chat-box {
+      background: #2d2d44;
+      border-color: #555;
+    }
+
+    .user-msg, .bot-msg {
+      padding: 0.6rem 0.8rem;
+      border-radius: 12px;
+      max-width: 80%;
+      word-wrap: break-word;
+      position: relative;
+      font-size: 0.95rem;
+      animation: fadeIn 0.3s ease;
+    }
+
     .user-msg {
-      color: #333;
+      align-self: flex-end;
+      background-color: var(--user-msg-light);
+      color: #1e4634;
       text-align: right;
-      margin: 0.25rem 0;
     }
+
+    body.dark-mode .user-msg {
+      background-color: var(--user-msg-dark);
+      color: #b4f3d2;
+    }
+
     .bot-msg {
-      color: #0066cc;
+      align-self: flex-start;
+      background-color: var(--bot-msg-light);
+      color: #1a237e;
       text-align: left;
-      margin: 0.25rem 0;
     }
+
+    body.dark-mode .bot-msg {
+      background-color: var(--bot-msg-dark);
+      color: #cdd4ff;
+    }
+
+    .timestamp {
+      font-size: 0.7rem;
+      color: gray;
+      display: block;
+      margin-top: 0.2rem;
+    }
+
     #chat-form {
       display: flex;
       gap: 0.5rem;
     }
+
     #user-input {
       flex: 1;
-      padding: 0.5rem;
+      padding: 0.6rem;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
     }
-    button {
-      padding: 0.5rem 1rem;
-      background: #0066cc;
+
+    #user-input:focus {
+      outline: none;
+      border-color: #0077cc;
+    }
+
+    body.dark-mode #user-input {
+      background-color: #3b3b55;
+      color: #ffffff;
+      border-color: #666;
+    }
+
+    body.dark-mode #user-input::placeholder {
+      color: #cccccc;
+    }
+
+    button[type="submit"] {
+      padding: 0.6rem 1.2rem;
+      background: #0077cc;
       color: #fff;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
+      font-size: 1rem;
       cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
     }
-    button:hover {
-      background: #004999;
+
+    button[type="submit"]:hover {
+      background: #005fa3;
+      transform: translateY(-1px);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
   <div class="chat-container">
-    <h2>PSG AI Chatbot</h2>
+    <h2>
+      PSG AI Chatbot
+      <button id="theme-toggle">🌓</button>
+    </h2>
     <div id="chat-box"></div>
     <form id="chat-form">
-      <input type="text" id="user-input" placeholder="Ask me anything about PSG..." required>
+      <input type="text" id="user-input" placeholder="Ask me anything about PSG..." required />
       <button type="submit">Send</button>
     </form>
   </div>
@@ -78,35 +198,38 @@
     const form = document.getElementById('chat-form');
     const chatBox = document.getElementById('chat-box');
     const userInput = document.getElementById('user-input');
+    const themeToggle = document.getElementById('theme-toggle');
+
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const message = userInput.value.trim();
       if (!message) return;
-
-      appendMessage('You', message);
+      appendMessage('user', message);
       userInput.value = '';
-
       try {
         const response = await fetch('/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message })
         });
-
         const data = await response.json();
-        appendMessage('Bot', data.reply || "Sorry, I couldn't understand that.");
+        appendMessage('bot', data.reply || "Sorry, I couldn't understand that.");
       } catch (error) {
         console.error(error);
-        appendMessage('Bot', 'Oops! Something went wrong. Please try again.');
+        appendMessage('bot', 'Oops! Something went wrong. Please try again.');
       }
     });
 
     function appendMessage(sender, text) {
-      const messageDiv = document.createElement('div');
-      messageDiv.className = sender === 'You' ? 'user-msg' : 'bot-msg';
-      messageDiv.textContent = `${sender}: ${text}`;
-      chatBox.appendChild(messageDiv);
+      const msgDiv = document.createElement('div');
+      msgDiv.className = sender === 'user' ? 'user-msg' : 'bot-msg';
+      const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+      msgDiv.innerHTML = `${text}<span class="timestamp">${timestamp}</span>`;
+      chatBox.appendChild(msgDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
   </script>
