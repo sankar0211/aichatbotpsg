@@ -248,7 +248,7 @@
     </h2>
     <div id="chat-box">
       <div id="typing-indicator" style="display: none;" class="message-container bot-container">
-        <img src="bot-avatar.png" alt="Bot Avatar" class="bot-avatar">
+        <img src="./images/bot-avatar.png" alt="Bot Avatar" class="bot-avatar">
         <div class="bot-msg"><span class="dot-typing"></span></div>
       </div>
     </div>
@@ -300,7 +300,7 @@
 
       const avatar = document.createElement('img');
       avatar.className = `${sender}-avatar`;
-      avatar.src = sender === 'user' ? 'user-avatar.png' : 'bot-avatar.png';
+      avatar.src = sender === 'user' ? '/static/images/user-avatar.png' : '/static/images/bot-avatar.png';
 
       const msgDiv = document.createElement('div');
       msgDiv.className = sender === 'user' ? 'user-msg' : 'bot-msg';
