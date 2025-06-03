@@ -89,18 +89,32 @@
       border-color: #555;
     }
 
+    .message-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.6rem;
+    }
+
+    .user-container {
+      flex-direction: row-reverse;
+    }
+
+    .user-avatar, .bot-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
+
     .user-msg, .bot-msg {
       padding: 0.6rem 0.8rem;
       border-radius: 12px;
       max-width: 80%;
       word-wrap: break-word;
-      position: relative;
       font-size: 0.95rem;
       animation: fadeIn 0.3s ease;
     }
 
     .user-msg {
-      align-self: flex-end;
       background-color: var(--user-msg-light);
       color: #1e4634;
       text-align: right;
@@ -112,7 +126,6 @@
     }
 
     .bot-msg {
-      align-self: flex-start;
       background-color: var(--bot-msg-light);
       color: #1a237e;
       text-align: left;
@@ -234,8 +247,9 @@
       <button id="theme-toggle">🌓</button>
     </h2>
     <div id="chat-box">
-      <div id="typing-indicator" style="display: none;" class="bot-msg">
-        <span class="dot-typing"></span>
+      <div id="typing-indicator" style="display: none;" class="message-container bot-container">
+        <img src="bot-avatar.png" alt="Bot Avatar" class="bot-avatar">
+        <div class="bot-msg"><span class="dot-typing"></span></div>
       </div>
     </div>
     <form id="chat-form">
@@ -261,7 +275,7 @@
       if (!message) return;
       appendMessage('user', message);
       userInput.value = '';
-      typingIndicator.style.display = 'block';
+      typingIndicator.style.display = 'flex';
       chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
@@ -281,11 +295,22 @@
     });
 
     function appendMessage(sender, text) {
+      const container = document.createElement('div');
+      container.className = `message-container ${sender}-container`;
+
+      const avatar = document.createElement('img');
+      avatar.className = `${sender}-avatar`;
+      avatar.src = sender === 'user' ? 'user-avatar.png' : 'bot-avatar.png';
+
       const msgDiv = document.createElement('div');
       msgDiv.className = sender === 'user' ? 'user-msg' : 'bot-msg';
-      const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       msgDiv.innerHTML = `${text}<span class="timestamp">${timestamp}</span>`;
-      chatBox.insertBefore(msgDiv, typingIndicator);
+
+      container.appendChild(avatar);
+      container.appendChild(msgDiv);
+
+      chatBox.insertBefore(container, typingIndicator);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
   </script>
