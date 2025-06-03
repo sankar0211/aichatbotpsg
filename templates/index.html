@@ -6,8 +6,8 @@
   <title>PSG AI Chatbot</title>
   <style>
     :root {
-      --bg-light: #eef2f3;
-      --bg-dark: #1e1e2f;
+      --bg-light-gradient: linear-gradient(to right, #dbeafe, #e0f7fa);
+      --bg-dark-gradient: linear-gradient(to right, #1f1c2c, #2c3e50);
       --card-light: #ffffff;
       --card-dark: #2a2a3d;
       --text-light: #2c3e50;
@@ -20,7 +20,7 @@
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--bg-light);
+      background: var(--bg-light-gradient);
       margin: 0;
       display: flex;
       justify-content: center;
@@ -30,7 +30,7 @@
     }
 
     body.dark-mode {
-      background: var(--bg-dark);
+      background: var(--bg-dark-gradient);
     }
 
     .chat-container {
@@ -81,7 +81,7 @@
       margin-bottom: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.6rem;
     }
 
     body.dark-mode #chat-box {
@@ -141,6 +141,7 @@
       color: gray;
       display: block;
       margin-top: 0.2rem;
+      text-align: right;
     }
 
     #chat-form {
@@ -247,7 +248,7 @@
       <button id="theme-toggle">🌓</button>
     </h2>
     <div id="chat-box">
-      <div id="typing-indicator" style="display: none;" class="message-container bot-container">
+      <div id="typing-indicator" style="display: none;" class="message-container">
         <img src="/static/images/bot-avatar.png" alt="Bot Avatar" class="bot-avatar">
         <div class="bot-msg"><span class="dot-typing"></span></div>
       </div>
@@ -296,15 +297,16 @@
 
     function appendMessage(sender, text) {
       const container = document.createElement('div');
-      container.className = `message-container ${sender}-container`;
+      container.className = `message-container ${sender === 'user' ? 'user-container' : ''}`;
 
       const avatar = document.createElement('img');
-      avatar.className = `${sender}-avatar`;
       avatar.src = sender === 'user' ? '/static/images/user-avatar.png' : '/static/images/bot-avatar.png';
+      avatar.alt = sender;
+      avatar.className = sender === 'user' ? 'user-avatar' : 'bot-avatar';
 
       const msgDiv = document.createElement('div');
       msgDiv.className = sender === 'user' ? 'user-msg' : 'bot-msg';
-      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
       msgDiv.innerHTML = `${text}<span class="timestamp">${timestamp}</span>`;
 
       container.appendChild(avatar);
