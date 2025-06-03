@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-import ollama  # now it’s installed!
+import ollama
 
 app = Flask(__name__)
 
@@ -9,16 +9,29 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.get_json()
-    user_message = data.get("message", "")
+    try:
+        data = request.get_json()
+        user_message = data.get("message", "").strip()
 
-    # Use ollama to generate a response
-    response = ollama.chat(model="llama3", messages=[
-        {"role": "user", "content": user_message}
-    ])
-    bot_reply = response["message"]["content"].strip()
+        if not user_message:
+            return jsonify({"reply": "Please enter a message."}), 400
 
-    return jsonify({"reply": bot_reply})
+        # Generate a response using Ollama
+        response = ollama.chat(
+            model="llama3",
+            messages=[{"role": "user", "content": user_message}]
+        )
+
+        bot_reply = response.get("message", {}).get("content", "").strip()
+
+        if not bot_reply:
+            return jsonify({"reply": "No response generated."}), 500
+
+        return jsonify({"reply": bot_reply})
+
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"reply": "Server error. Please try again later."}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
