@@ -1,3 +1,4 @@
+# users.db (init script - name it init_db.py or run once from any .py file)
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
