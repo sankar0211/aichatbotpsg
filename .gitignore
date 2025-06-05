@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
 .env
+echo users.db >> .gitignore
 .venv/
 ai_chatbot_psg/__pycache__/
