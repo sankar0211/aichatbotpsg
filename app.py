@@ -1,11 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import send_from_directory
+
+
 import sqlite3
 import ollama
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 
-# Initialize DB if not exists
+# Initialize the database
 def init_db():
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
@@ -25,6 +28,7 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -37,8 +41,8 @@ def login():
             session['username'] = username
             return redirect('/chat')
         else:
-            return 'Invalid credentials. <a href="/login">Try again</a>.'
-    return render_template('login.html')
+            error = 'Invalid username or password!'
+    return render_template('login.html', error=error)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -57,7 +61,7 @@ def register():
             conn.close()
     return render_template('register.html')
 
-@app.route('/chat')
+@app.route('/chat', methods=['GET'])
 def chat():
     if 'username' in session:
         return render_template('chat.html')
@@ -71,7 +75,6 @@ def chat_reply():
         if not user_message:
             return jsonify({"reply": "Please enter a message."}), 400
 
-        # Generate a response using Ollama
         response = ollama.chat(
             model="llama3",
             messages=[{"role": "user", "content": user_message}]
@@ -90,7 +93,10 @@ def chat_reply():
 def logout():
     session.clear()
     return redirect('/login')
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory('static', 'favicon.ico')
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True)
+    app.run(debug=True, port=5000)

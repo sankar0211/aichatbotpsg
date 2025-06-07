@@ -111,6 +111,11 @@
     .form-ui p {
       text-align: center;
       font-size: 0.9rem;
+      color: var(--text-light);
+    }
+
+    body.dark-mode .form-ui p {
+      color: var(--text-dark);
     }
 
     .form-ui a {
@@ -118,8 +123,20 @@
       text-decoration: none;
     }
 
+    body.dark-mode .form-ui a {
+      color: #66ccff;
+    }
+
     .form-ui a:hover {
       text-decoration: underline;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 0.9rem;
+      margin-top: -0.5rem;
+      margin-bottom: -0.5rem;
+      padding-left: 0.2rem;
     }
   </style>
 </head>
@@ -132,6 +149,9 @@
     <form method="POST" action="/login" class="form-ui">
       <input type="text" name="username" placeholder="Username" required />
       <input type="password" name="password" placeholder="Password" required />
+      {% if error %}
+        <div class="error-message">{{ error }}</div>
+      {% endif %}
       <button type="submit">Login</button>
       <p>Don't have an account? <a href="/register">Register</a></p>
     </form>
