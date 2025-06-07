@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_from_directory
 import sqlite3
 import ollama
+import os
+from sentence_transformers import SentenceTransformer, util
+import faiss
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -8,6 +11,25 @@ app.secret_key = 'your_secret_key_here'
 @app.before_request
 def skip_ngrok_warning():
     request.headers.environ['HTTP_NGROK_SKIP_BROWSER_WARNING'] = 'true'
+
+# Load and embed FAQs at startup
+model = SentenceTransformer('all-MiniLM-L6-v2')
+faq_file = 'PSG_chatbot.txt'
+faq_data = []
+if os.path.exists(faq_file):
+    with open(faq_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            if line.strip():
+                parts = line.strip().split('?', 1)
+                if len(parts) == 2:
+                    question, answer = parts
+                    faq_data.append({"question": question.strip() + '?', "answer": answer.strip()})
+faq_questions = [entry['question'] for entry in faq_data]
+faq_embeddings = model.encode(faq_questions, convert_to_tensor=False)
+dim = len(faq_embeddings[0]) if faq_embeddings else 384
+faq_index = faiss.IndexFlatL2(dim)
+if faq_embeddings:
+    faq_index.add(faq_embeddings)
 
 def init_db():
     conn = sqlite3.connect('users.db')
@@ -74,15 +96,23 @@ def chat_reply():
     try:
         data = request.get_json()
         user_message = data.get("message", "").strip()
-
         if not user_message:
             return jsonify({"reply": "Please enter a message."}), 400
 
-        response = ollama.chat(
-            model="llama3",
-            messages=[{"role": "user", "content": user_message}]
-        )
+        # Embed user query and search FAQ
+        query_embedding = model.encode(user_message, convert_to_tensor=False)
+        D, I = faq_index.search([query_embedding], k=1)
+        best_match_idx = I[0][0]
+        similarity_score = 1 - D[0][0]
 
+        if similarity_score > 0.75:
+            faq_entry = faq_data[best_match_idx]
+            context = f"You are an AI assistant for PSG College of Technology. Use this information to answer naturally:\nQ: {faq_entry['question']}\nA: {faq_entry['answer']}"
+        else:
+            context = "You are an AI assistant for PSG College of Technology. Answer naturally based on your general knowledge."
+
+        prompt = f"{context}\n\nUser: {user_message}\nAI:"
+        response = ollama.chat(model='llama3', messages=[{"role": "user", "content": prompt}])
         bot_reply = response.get("message", {}).get("content", "").strip()
 
         if not bot_reply:
