@@ -249,11 +249,11 @@
       position: fixed;
       bottom: 20px;
       left: 0;
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
-      color: var(--popup-text-light);
+      background: linear-gradient(135deg,rgb(217, 247, 255),rgb(234, 255, 223)); /* warm light gradient */
+      color: #333333; /* darker text for contrast */
       padding: 12px 24px; /* Reduced container size */
       border-radius: 16px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
       font-weight: 600;
       font-size: 1.4rem;
       transform: translateX(-100%);
@@ -261,6 +261,7 @@
       z-index: 9999;
       pointer-events: none;
     }
+    
     body.dark-mode #welcome-popup {
       background: linear-gradient(135deg, #1f1c2c, #2c3e50); 
       color: var(--popup-text-dark);
