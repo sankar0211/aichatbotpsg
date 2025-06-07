@@ -26,9 +26,11 @@ if os.path.exists(faq_file):
                     faq_data.append({"question": question.strip() + '?', "answer": answer.strip()})
 faq_questions = [entry['question'] for entry in faq_data]
 faq_embeddings = model.encode(faq_questions, convert_to_tensor=False)
-dim = len(faq_embeddings[0]) if faq_embeddings else 384
+import numpy as np
+faq_embeddings = np.array(faq_embeddings)
+dim = faq_embeddings.shape[1] if faq_embeddings.shape[0] > 0 else 384
 faq_index = faiss.IndexFlatL2(dim)
-if faq_embeddings:
+if faq_embeddings.shape[0] > 0:
     faq_index.add(faq_embeddings)
 
 def init_db():
@@ -61,7 +63,7 @@ def login():
         conn.close()
         if user:
             session['username'] = username
-            session['just_logged_in'] = True 
+            session['just_logged_in'] = True
             return redirect('/chat')
         else:
             error = 'Invalid username or password!'
@@ -69,6 +71,7 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    error = None
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -79,15 +82,15 @@ def register():
             conn.commit()
             return redirect('/login')
         except sqlite3.IntegrityError:
-            return 'Username already exists. <a href="/register">Try another</a>.'
+            error = 'Username already exists! Create a new one.'
         finally:
             conn.close()
-    return render_template('register.html')
+    return render_template('register.html', error=error)
 
 @app.route('/chat', methods=['GET'])
 def chat():
     if 'username' in session:
-        just_logged_in = session.pop('just_logged_in', False)  
+        just_logged_in = session.pop('just_logged_in', False)
         return render_template('chat.html', username=session['username'], just_logged_in=just_logged_in)
     return redirect('/login')
 
@@ -99,9 +102,10 @@ def chat_reply():
         if not user_message:
             return jsonify({"reply": "Please enter a message."}), 400
 
-        # Embed user query and search FAQ
         query_embedding = model.encode(user_message, convert_to_tensor=False)
-        D, I = faq_index.search([query_embedding], k=1)
+        query_embedding = np.array(query_embedding).reshape(1, -1)
+        D, I = faq_index.search(query_embedding, k=1)
+
         best_match_idx = I[0][0]
         similarity_score = 1 - D[0][0]
 
