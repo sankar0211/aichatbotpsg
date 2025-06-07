@@ -1,23 +1,23 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from flask import send_from_directory
-
-
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_from_directory
 import sqlite3
 import ollama
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 
-# Initialize the database
+@app.before_request
+def skip_ngrok_warning():
+    request.headers.environ['HTTP_NGROK_SKIP_BROWSER_WARNING'] = 'true'
+
 def init_db():
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
     c.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        password TEXT
-    )
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT
+        )
     ''')
     conn.commit()
     conn.close()
@@ -72,6 +72,7 @@ def chat_reply():
     try:
         data = request.get_json()
         user_message = data.get("message", "").strip()
+
         if not user_message:
             return jsonify({"reply": "Please enter a message."}), 400
 
@@ -80,6 +81,7 @@ def chat_reply():
             messages=[{"role": "user", "content": user_message}]
         )
         bot_reply = response.get("message", {}).get("content", "").strip()
+
         if not bot_reply:
             return jsonify({"reply": "No response generated."}), 500
 
@@ -93,6 +95,7 @@ def chat_reply():
 def logout():
     session.clear()
     return redirect('/login')
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory('static', 'favicon.ico')
