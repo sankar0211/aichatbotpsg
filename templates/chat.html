@@ -16,6 +16,10 @@
       --bot-msg-light: #e8f0fe;
       --user-msg-dark: #355c4f;
       --bot-msg-dark: #374a6b;
+      --popup-bg-light: #0077cc;
+      --popup-bg-dark: #005fa3;
+      --popup-text-light: #fff;
+      --popup-text-dark: #ddd;
     }
 
     body {
@@ -27,10 +31,44 @@
       align-items: center;
       height: 100vh;
       transition: background 0.4s ease;
+      overflow-x: hidden;
     }
 
     body.dark-mode {
       background: var(--bg-dark-gradient);
+    }
+
+    header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-light);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 2;
+    }
+
+    body.dark-mode header {
+      background: var(--card-dark);
+    }
+
+    #logout-btn {
+      background: #cc3300;
+      border: none;
+      color: white;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    #logout-btn:hover {
+      background: #991f00;
     }
 
     .chat-container {
@@ -43,24 +81,28 @@
       display: flex;
       flex-direction: column;
       transition: background 0.4s ease;
+      position: relative;
+      z-index: 1;
     }
 
     body.dark-mode .chat-container {
       background: var(--card-dark);
     }
 
-    .chat-container h2 {
-      margin-top: 0;
-      font-size: 1.5rem;
-      text-align: center;
-      color: var(--text-light);
-      margin-bottom: 1rem;
+    .chat-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 1rem;
     }
 
-    body.dark-mode .chat-container h2 {
+    .chat-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--text-light);
+    }
+
+    body.dark-mode .chat-header h2 {
       color: var(--text-dark);
     }
 
@@ -68,7 +110,7 @@
       cursor: pointer;
       background: none;
       border: none;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
     }
 
     #chat-box {
@@ -155,7 +197,6 @@
       border: 1px solid #ccc;
       border-radius: 8px;
       font-size: 1rem;
-      transition: border-color 0.3s ease;
     }
 
     #user-input:focus {
@@ -169,10 +210,6 @@
       border-color: #666;
     }
 
-    body.dark-mode #user-input::placeholder {
-      color: #cccccc;
-    }
-
     button[type="submit"] {
       padding: 0.6rem 1.2rem;
       background: #0077cc;
@@ -181,12 +218,11 @@
       border-radius: 8px;
       font-size: 1rem;
       cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease;
+      transition: background 0.3s ease;
     }
 
     button[type="submit"]:hover {
       background: #005fa3;
-      transform: translateY(-1px);
     }
 
     @keyframes fadeIn {
@@ -194,24 +230,77 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    @keyframes slideIn {
+      from { 
+        transform: translateX(-100%); opacity: 0; }
+      to { 
+        transform: translateX(20px); opacity: 1;}
+    }
+
+    @keyframes slideOut {
+      from { 
+        transform: translateX(20px); opacity: 1; 
+       }
+      to {
+        transform: translateX(-100%); opacity: 0; }
+    }
+
+    #welcome-popup {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: var(--popup-text-light);
+      padding: 12px 24px; /* Reduced container size */
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+      font-weight: 600;
+      font-size: 1.4rem;
+      transform: translateX(-100%);
+      opacity: 0;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    body.dark-mode #welcome-popup {
+      background: linear-gradient(135deg, #1f1c2c, #2c3e50); 
+      color: var(--popup-text-dark);
+    }
+
+    #welcome-popup.show, #welcome-popup.hide {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      pointer-events: auto;
+    }
+    #welcome-popup.show {
+      animation: slideIn 0.3s ease-out forwards;
+    }
+
+    #welcome-popup.hide {
+      animation: slideOut 0.5s ease-in forwards;
+    }
+
+    body.dark-mode #welcome-popup {
+      background-color: var(--popup-bg-dark);
+      color: var(--popup-text-dark);
+    }
+
     .dot-typing {
       display: inline-block;
       position: relative;
-      width: 60px;
-      height: 1rem;
+      width: 1.2rem;
+      height: 0.5rem;
     }
 
-    .dot-typing::before,
-    .dot-typing::after,
-    .dot-typing span {
+    .dot-typing::before, .dot-typing::after, .dot-typing span {
       content: '';
       position: absolute;
       top: 0;
-      width: 10px;
-      height: 10px;
+      width: 0.3rem;
+      height: 0.3rem;
+      background: #888;
       border-radius: 50%;
-      background: #0077cc;
-      animation: typing 1.2s infinite;
+      animation: blink 1.5s infinite ease-in-out;
     }
 
     .dot-typing::before {
@@ -220,55 +309,77 @@
     }
 
     .dot-typing span {
-      left: 20px;
-      animation-delay: 0.2s;
+      left: 0.45rem;
+      animation-delay: 0.15s;
     }
 
     .dot-typing::after {
-      left: 40px;
-      animation-delay: 0.4s;
+      left: 0.9rem;
+      animation-delay: 0.3s;
     }
 
-    @keyframes typing {
+    @keyframes blink {
       0%, 80%, 100% {
-        transform: scale(0.6);
         opacity: 0.3;
+        transform: scale(0.9);
       }
       40% {
-        transform: scale(1);
         opacity: 1;
+        transform: scale(1.2);
       }
     }
   </style>
 </head>
 <body>
+  <header>
+    <div></div>
+    <button id="logout-btn" onclick="logoutAndRedirect()">Logout</button>
+  </header>
+
   <div class="chat-container">
-    <h2>
-      PSG AI Chatbot
+    <div class="chat-header">
+      <h2>PSG AI Chatbot</h2>
       <button id="theme-toggle">🌓</button>
-    </h2>
-    <div id="chat-box">
-      <div id="typing-indicator" style="display: none;" class="message-container">
-        <img src="/static/images/bot-avatar.png" alt="Bot Avatar" class="bot-avatar">
-        <div class="bot-msg"><span class="dot-typing"></span></div>
-      </div>
     </div>
+
+    <div id="chat-box">
+      <div id="typing-indicator" class="message-container bot-container" style="display: none">
+      <img src="/static/images/bot-avatar.png" alt="Bot" class="bot-avatar">
+      <div class="bot-msg"><span class="dot-typing"><span></span></span></div>
+    </div>
+    </div>
+
     <form id="chat-form">
       <input type="text" id="user-input" placeholder="Ask me anything about PSG..." required />
       <button type="submit">Send</button>
     </form>
   </div>
 
+  <div id="welcome-popup"></div>
+
   <script>
+    const body = document.body;
+    const themeToggle = document.getElementById('theme-toggle');
+    const welcomePopup = document.getElementById('welcome-popup');
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      body.classList.add('dark-mode');
+      themeToggle.textContent = '🌕';
+    } else {
+      themeToggle.textContent = '🌑';
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.classList.toggle('dark-mode');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      themeToggle.textContent = isDark ? '🌕' : '🌑';
+    });
+
     const form = document.getElementById('chat-form');
     const chatBox = document.getElementById('chat-box');
     const userInput = document.getElementById('user-input');
-    const themeToggle = document.getElementById('theme-toggle');
     const typingIndicator = document.getElementById('typing-indicator');
-
-    themeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -281,27 +392,22 @@
 
       try {
         const response = await fetch('/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ message })
-      });
-
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
         const data = await response.json();
         typingIndicator.style.display = 'none';
         appendMessage('bot', data.reply || "Sorry, I couldn't understand that.");
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
         typingIndicator.style.display = 'none';
-        appendMessage('bot', 'Oops! Something went wrong. Please try again.');
+        appendMessage('bot', 'Oops! Something went wrong.');
       }
     });
 
     function appendMessage(sender, text) {
       const container = document.createElement('div');
       container.className = `message-container ${sender === 'user' ? 'user-container' : ''}`;
-
       const avatar = document.createElement('img');
       avatar.src = sender === 'user' ? '/static/images/user-avatar.png' : '/static/images/bot-avatar.png';
       avatar.alt = sender;
@@ -314,10 +420,31 @@
 
       container.appendChild(avatar);
       container.appendChild(msgDiv);
-
       chatBox.insertBefore(container, typingIndicator);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
+
+    function logoutAndRedirect() {
+      sessionStorage.removeItem("welcomeShown"); // Reset popup flag
+      window.location.href = "/logout";
+    }
+
+    // WELCOME POPUP SHOW ON LOGIN ONLY
+    const username = {{ username | tojson | safe }};
+    const justLoggedIn = {{ just_logged_in | tojson | safe }};
+    const popupShown = sessionStorage.getItem("welcomeShown");
+
+    if (justLoggedIn && username && !popupShown) {
+      welcomePopup.textContent = `Welcome, ${username}!`;
+      welcomePopup.classList.add("show");
+      sessionStorage.setItem("welcomeShown", "true");
+      setTimeout(() => {
+        welcomePopup.classList.remove("show");
+        welcomePopup.classList.add("hide");
+      }, 3000);
+    }
   </script>
+</body>
+</html>
 </body>
 </html>

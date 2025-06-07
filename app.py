@@ -39,6 +39,7 @@ def login():
         conn.close()
         if user:
             session['username'] = username
+            session['just_logged_in'] = True 
             return redirect('/chat')
         else:
             error = 'Invalid username or password!'
@@ -64,7 +65,8 @@ def register():
 @app.route('/chat', methods=['GET'])
 def chat():
     if 'username' in session:
-        return render_template('chat.html')
+        just_logged_in = session.pop('just_logged_in', False)  
+        return render_template('chat.html', username=session['username'], just_logged_in=just_logged_in)
     return redirect('/login')
 
 @app.route('/chat', methods=['POST'])
@@ -80,15 +82,16 @@ def chat_reply():
             model="llama3",
             messages=[{"role": "user", "content": user_message}]
         )
+
         bot_reply = response.get("message", {}).get("content", "").strip()
 
         if not bot_reply:
-            return jsonify({"reply": "No response generated."}), 500
+            return jsonify({"reply": "Sorry, I couldn't generate a response."}), 500
 
         return jsonify({"reply": bot_reply})
 
     except Exception as e:
-        print("Error:", e)
+        app.logger.error(f"Chat reply error: {e}", exc_info=True)
         return jsonify({"reply": "Server error. Please try again later."}), 500
 
 @app.route('/logout')
