@@ -39,7 +39,7 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
       padding: 2rem;
       width: 100%;
-      max-width: 500px;
+      max-width: 480px;
       display: flex;
       flex-direction: column;
       transition: background 0.4s ease;
@@ -72,7 +72,7 @@
     }
 
     #chat-box {
-      height: 300px;
+      height: 320px;
       overflow-y: auto;
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -169,12 +169,8 @@
       border-color: #666;
     }
 
-    #ngrok-url {
-      margin-bottom: 1rem;
-      padding: 0.5rem;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 0.95rem;
+    body.dark-mode #user-input::placeholder {
+      color: #cccccc;
     }
 
     button[type="submit"] {
@@ -251,16 +247,12 @@
       PSG AI Chatbot
       <button id="theme-toggle">🌓</button>
     </h2>
-
-    <input type="text" id="ngrok-url" placeholder="Paste your Ngrok URL here (e.g. https://abc123.ngrok-free.app)" />
-
     <div id="chat-box">
       <div id="typing-indicator" style="display: none;" class="message-container">
         <img src="/static/images/bot-avatar.png" alt="Bot Avatar" class="bot-avatar">
         <div class="bot-msg"><span class="dot-typing"></span></div>
       </div>
     </div>
-
     <form id="chat-form">
       <input type="text" id="user-input" placeholder="Ask me anything about PSG..." required />
       <button type="submit">Send</button>
@@ -271,7 +263,6 @@
     const form = document.getElementById('chat-form');
     const chatBox = document.getElementById('chat-box');
     const userInput = document.getElementById('user-input');
-    const ngrokInput = document.getElementById('ngrok-url');
     const themeToggle = document.getElementById('theme-toggle');
     const typingIndicator = document.getElementById('typing-indicator');
 
@@ -282,21 +273,16 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const message = userInput.value.trim();
-      const baseURL = ngrokInput.value.trim();
-      if (!message || !baseURL) return;
-
+      if (!message) return;
       appendMessage('user', message);
       userInput.value = '';
       typingIndicator.style.display = 'flex';
       chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
-        const response = await fetch(`${baseURL}/chat`, {
+        const response = await fetch('/chat', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message })
         });
         const data = await response.json();
