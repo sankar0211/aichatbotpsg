@@ -4,6 +4,7 @@ import ollama
 import os
 from sentence_transformers import SentenceTransformer, util
 import faiss
+import numpy as np
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -26,7 +27,6 @@ if os.path.exists(faq_file):
                     faq_data.append({"question": question.strip() + '?', "answer": answer.strip()})
 faq_questions = [entry['question'] for entry in faq_data]
 faq_embeddings = model.encode(faq_questions, convert_to_tensor=False)
-import numpy as np
 faq_embeddings = np.array(faq_embeddings)
 dim = faq_embeddings.shape[1] if faq_embeddings.shape[0] > 0 else 384
 faq_index = faiss.IndexFlatL2(dim)
@@ -44,6 +44,17 @@ def init_db():
         )
     ''')
     conn.commit()
+
+    # Display current users for debugging or admin view
+    c.execute("SELECT * FROM users")
+    rows = c.fetchall()
+    print("\nCurrent Users Table:")
+    print("+----+------------------------+------------------------+")
+    print("| ID | Username               | Password               |")
+    print("+----+------------------------+------------------------+")
+    for row in rows:
+        print(f"| {str(row[0]).ljust(2)} | {row[1].ljust(22)} | {row[2].ljust(22)} |")
+    print("+----+------------------------+------------------------+\n")
     conn.close()
 
 @app.route('/')
