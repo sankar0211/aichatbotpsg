@@ -30,7 +30,9 @@ class LLMService:
 
             messages = [{"role": "system", "content": context}]
             for msg in history:
-                messages.append({"role": msg.role, "content": msg.content})
+                # Groq/OpenAI APIs expect 'assistant' for the AI's role, not 'bot'
+                api_role = "assistant" if msg.role == "bot" else msg.role
+                messages.append({"role": api_role, "content": msg.content})
             messages.append({"role": "user", "content": user_message})
 
             # 3. Save User Message
