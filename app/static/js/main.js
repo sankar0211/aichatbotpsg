@@ -43,12 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
             let fullText = "";
             botMsgContent.innerHTML = ""; // clear typing
 
+            let buffer = "";
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunk = decoder.decode(value, { stream: true });
-                const lines = chunk.split('\n\n');
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n\n');
+                
+                // The last chunk might be incomplete (doesn't end with \n\n)
+                buffer = lines.pop();
                 
                 for (const line of lines) {
                     if (line.startsWith('data: ')) {
@@ -63,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             botMsgContent.innerHTML = marked.parse(fullText);
                             scrollToBottom();
                         } catch(err) {
-                            console.error("Parse error", err);
+                            console.error("Parse error", err, "on string:", dataStr);
                         }
                     }
                 }
