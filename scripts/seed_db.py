@@ -13,7 +13,7 @@ def seed_faqs():
         # Clear existing
         db.session.query(FAQ).delete()
         
-        faq_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'aichatbotpsg', 'PSG_chatbot.txt')
+        faq_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'PSG_chatbot.txt')
         if not os.path.exists(faq_file):
             print(f"Error: {faq_file} not found.")
             return
