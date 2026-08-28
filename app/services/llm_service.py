@@ -40,11 +40,32 @@ class LLMService:
 
             # 4. Generate Response (Streaming via Groq)
             bot_reply_full = ""
-            stream = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=messages,
-                stream=True,
-            )
+            
+            # Helper to generate with a specific model
+            def attempt_generation(model_id):
+                return self.client.chat.completions.create(
+                    model=model_id,
+                    messages=messages,
+                    stream=True,
+                )
+                
+            try:
+                stream = attempt_generation(self.model_name)
+            except Exception as initial_err:
+                if 'does not exist or you do not have access' in str(initial_err) or '404' in str(initial_err) or '400' in str(initial_err):
+                    print(f"Model {self.model_name} failed. Attempting to dynamically fetch an available model...")
+                    # Dynamically fetch available models for this API key
+                    available_models = self.client.models.list().data
+                    if not available_models:
+                        raise Exception("No available models found for this API key.")
+                    
+                    # Try to find a llama model, otherwise just use the first one
+                    fallback_model = next((m.id for m in available_models if 'llama' in m.id.lower()), available_models[0].id)
+                    print(f"Falling back to model: {fallback_model}")
+                    self.model_name = fallback_model # update for future requests
+                    stream = attempt_generation(fallback_model)
+                else:
+                    raise initial_err
             for chunk in stream:
                 if chunk.choices[0].delta.content is not None:
                     content = chunk.choices[0].delta.content
