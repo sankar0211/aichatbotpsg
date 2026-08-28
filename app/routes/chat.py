@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, Response, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, Response, redirect, url_for, stream_with_context
 from flask_login import login_required, current_user
 from app.models import ChatSession, ChatMessage
 from app.services.llm_service import llm_service
@@ -61,4 +61,4 @@ def chat_stream():
             yield f"data: {json.dumps({'content': chunk})}\n\n"
         yield "data: [DONE]\n\n"
         
-    return Response(generate(), mimetype='text/event-stream')
+    return Response(stream_with_context(generate()), mimetype='text/event-stream')
