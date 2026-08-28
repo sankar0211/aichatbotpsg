@@ -19,7 +19,7 @@ class LLMService:
         # 1. Retrieve Context
         faq_match = rag_service.search(user_message)
         if faq_match:
-            context = f"You are an AI assistant for PSG College of Technology. Use this information to answer naturally:\nQ: {faq_match.question}\nA: {faq_match.answer}"
+            context = f"You are an AI assistant for PSG College of Technology. Use this information to answer naturally:\n{faq_match}"
         else:
             context = "You are an AI assistant for PSG College of Technology. Answer naturally based on your general knowledge."
 
