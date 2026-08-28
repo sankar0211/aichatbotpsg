@@ -1,49 +1,42 @@
-import faiss
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-from sentence_transformers import SentenceTransformer
 from app.models import FAQ
 
 class RAGService:
     def __init__(self):
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
-        self.index = None
+        self.vectorizer = TfidfVectorizer(stop_words='english')
+        self.tfidf_matrix = None
         self.faq_list = []
         
     def build_index(self):
         self.faq_list = FAQ.query.all()
         if not self.faq_list:
             print("No FAQs in DB to build index.")
-            self.index = None
+            self.tfidf_matrix = None
             return
 
         questions = [faq.question for faq in self.faq_list]
-        embeddings = self.model.encode(questions, convert_to_tensor=False)
-        embeddings = np.array(embeddings)
-        
-        dim = embeddings.shape[1]
-        self.index = faiss.IndexFlatL2(dim)
-        self.index.add(embeddings)
-        print(f"FAISS index built with {len(self.faq_list)} FAQs.")
+        self.tfidf_matrix = self.vectorizer.fit_transform(questions)
+        print(f"TF-IDF index built with {len(self.faq_list)} FAQs.")
 
-    def search(self, query: str, top_k: int = 1, threshold: float = 0.75):
-        if not self.index or not self.faq_list:
+    def search(self, query: str, top_k: int = 1, threshold: float = 0.2):
+        if self.tfidf_matrix is None or not self.faq_list:
             return None
 
-        query_emb = self.model.encode([query], convert_to_tensor=False)
-        query_emb = np.array(query_emb).reshape(1, -1)
+        # Convert user query to TF-IDF vector
+        query_vec = self.vectorizer.transform([query])
         
-        D, I = self.index.search(query_emb, k=top_k)
+        # Calculate cosine similarity against all FAQs
+        similarities = cosine_similarity(query_vec, self.tfidf_matrix).flatten()
         
-        best_match_idx = I[0][0]
-        similarity_score = 1 - D[0][0] # Approximation for L2 if normalized, but let's just use L2 distance threshold or cosine similarity. 
-        # Actually all-MiniLM-L6-v2 vectors are not normalized by default in sentence_transformers unless specified.
-        # But for simplicity, we'll keep the threshold logic the original author had.
+        # Get the index of the highest similarity score
+        best_match_idx = np.argmax(similarities)
+        best_score = similarities[best_match_idx]
         
-        # We can just return if score is "good enough" (L2 distance is small)
-        # 0.75 threshold logic from original code might have been flawed but we'll adapt it.
-        # Let's say if L2 distance < 1.0 it's a good match.
-        if D[0][0] < 1.0:
+        if best_score >= threshold:
             return self.faq_list[best_match_idx]
+        
         return None
 
 rag_service = RAGService()
