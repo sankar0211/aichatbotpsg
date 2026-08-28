@@ -11,7 +11,7 @@ chat_bp = Blueprint('chat', __name__)
 # Ensure FAISS index is built before any chat requests
 @chat_bp.before_app_request
 def initialize_rag():
-    if not rag_service.index:
+    if not rag_service.faq_list:
         rag_service.build_index()
 
 @chat_bp.route('/')
