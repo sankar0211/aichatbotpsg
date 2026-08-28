@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PSG AI Chatbot{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="light-mode">
+    <div id="app">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-container">
+              {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Main Content -->
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Theme toggler logic -->
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light-mode';
+        document.body.className = savedTheme;
+
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark-mode');
+            if(isDark) {
+                document.body.classList.remove('light-mode');
+            } else {
+                document.body.classList.add('light-mode');
+                document.body.classList.remove('dark-mode');
+            }
+            localStorage.setItem('theme', isDark ? 'dark-mode' : 'light-mode');
+        }
+    </script>
+    
+    <!-- Custom JS -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

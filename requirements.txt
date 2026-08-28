@@ -1,0 +1,10 @@
+flask
+flask-sqlalchemy
+flask-login
+werkzeug
+sentence-transformers
+faiss-cpu
+numpy
+groq
+python-dotenv
+gunicorn

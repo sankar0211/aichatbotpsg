@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Login - PSG AI{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="glass-card auth-card">
+        <h2>Welcome Back</h2>
+        <p class="subtitle">Login to PSG AI Chatbot</p>
+        
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            <div class="input-group">
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+            <div class="input-group">
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn primary-btn">Login</button>
+        </form>
+        
+        <p class="footer-text">Don't have an account? <a href="{{ url_for('auth.register') }}">Register</a></p>
+        <button onclick="toggleTheme()" class="theme-btn">🌓 Toggle Theme</button>
+    </div>
+</div>
+{% endblock %}
