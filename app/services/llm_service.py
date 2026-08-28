@@ -55,12 +55,28 @@ class LLMService:
                 if 'does not exist or you do not have access' in str(initial_err) or '404' in str(initial_err) or '400' in str(initial_err):
                     print(f"Model {self.model_name} failed. Attempting to dynamically fetch an available model...")
                     # Dynamically fetch available models for this API key
-                    available_models = self.client.models.list().data
+                    available_models = [m.id for m in self.client.models.list().data]
                     if not available_models:
                         raise Exception("No available models found for this API key.")
                     
-                    # Try to find a llama model, otherwise just use the first one
-                    fallback_model = next((m.id for m in available_models if 'llama' in m.id.lower()), available_models[0].id)
+                    # Known conversational models in order of preference
+                    preferred_models = [
+                        'llama-3.1-70b-versatile',
+                        'llama-3.1-8b-instant',
+                        'llama3-70b-8192',
+                        'llama3-8b-8192',
+                        'mixtral-8x7b-32768',
+                        'gemma2-9b-it',
+                        'gemma-7b-it'
+                    ]
+                    
+                    # Find the first preferred model that is available
+                    fallback_model = next((m for m in preferred_models if m in available_models), None)
+                    
+                    # If none of our preferred models are available, try any model that isn't a guard/whisper model
+                    if not fallback_model:
+                        fallback_model = next((m for m in available_models if 'guard' not in m.lower() and 'whisper' not in m.lower()), available_models[0])
+                        
                     print(f"Falling back to model: {fallback_model}")
                     self.model_name = fallback_model # update for future requests
                     stream = attempt_generation(fallback_model)
