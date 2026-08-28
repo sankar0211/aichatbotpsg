@@ -20,7 +20,7 @@ class LLMService:
             # 1. Retrieve Context
             faq_match = rag_service.search(user_message)
             if faq_match:
-                context = f"You are an AI assistant for PSG College of Technology. Use this information to answer naturally:\n{faq_match}"
+                context = f"You are an AI assistant for PSG College of Technology. Use this information to answer naturally:\nQuestion: {faq_match.question}\nAnswer: {faq_match.answer}"
             else:
                 context = "You are an AI assistant for PSG College of Technology. Answer naturally based on your general knowledge."
 
@@ -100,6 +100,11 @@ class LLMService:
             import traceback
             error_details = traceback.format_exc()
             print(f"Error in stream: {error_details}")
-            yield f" \n\n**System Error:** Could not process request.\n```\n{e}\n```"
+            
+            # Must format as valid SSE JSON so the frontend Javascript can display the error
+            import json
+            error_msg = f"\n\n**System Error:** Could not process request.\n```\n{e}\n```"
+            yield f"data: {json.dumps({'content': error_msg})}\n\n"
+            yield "data: [DONE]\n\n"
 
 llm_service = LLMService()
