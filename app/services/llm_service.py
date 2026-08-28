@@ -6,8 +6,8 @@ from app import db
 
 class LLMService:
     def __init__(self):
-        # We use a fast, free LLM hosted on Groq (e.g. LLaMA 3 8B)
-        self.model_name = os.getenv('LLM_MODEL', 'llama3-8b-8192')
+        # We use a fast, free LLM hosted on Groq
+        self.model_name = os.getenv('LLM_MODEL', 'llama-3.1-8b-instant')
         api_key = os.getenv('GROQ_API_KEY')
         self.client = Groq(api_key=api_key) if api_key else None
 
