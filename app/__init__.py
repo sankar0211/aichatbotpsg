@@ -42,4 +42,9 @@ def create_app():
         app.register_blueprint(auth_bp)
         app.register_blueprint(chat_bp)
 
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        import traceback
+        return f"<pre>{traceback.format_exc()}</pre>", 500
+
     return app
