@@ -49,6 +49,7 @@ class LLMService:
                     model=model_id,
                     messages=messages,
                     stream=True,
+                    max_tokens=1024
                 )
                 
             try:
@@ -63,13 +64,11 @@ class LLMService:
                     
                     # Known conversational models in order of preference
                     preferred_models = [
-                        'llama-3.1-70b-versatile',
+                        'llama-3.3-70b-versatile',
                         'llama-3.1-8b-instant',
-                        'llama3-70b-8192',
                         'llama3-8b-8192',
                         'mixtral-8x7b-32768',
-                        'gemma2-9b-it',
-                        'gemma-7b-it'
+                        'gemma2-9b-it'
                     ]
                     
                     # Find the first preferred model that is available
@@ -101,10 +100,7 @@ class LLMService:
             error_details = traceback.format_exc()
             print(f"Error in stream: {error_details}")
             
-            # Must format as valid SSE JSON so the frontend Javascript can display the error
-            import json
-            error_msg = f"\n\n**System Error:** Could not process request.\n```\n{e}\n```"
-            yield f"data: {json.dumps({'content': error_msg})}\n\n"
-            yield "data: [DONE]\n\n"
+            # chat.py already wraps yielded chunks in JSON/SSE format, so we just yield the raw string
+            yield f" \n\n**System Error:** Could not process request.\n```\n{e}\n```"
 
 llm_service = LLMService()
